@@ -11,7 +11,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Tobii/DemoScenes/01_GazePointData.unity
     guid: 25d19715294d17e429777a13a4b2af44
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/TrackerEvaluation.unity
     guid: 8b600ee20ac1589438b7676aad3de231
+  - enabled: 1
+    path: Assets/Scenes/DisplayPhoto.unity
+    guid: 0bc31431cd0069f48ad55d7fd4a51be0
+  - enabled: 1
+    path: Assets/Scenes/SelectArea.unity
+    guid: f474b604fcfa0004c8155c414859c14c
   m_configObjects: {}

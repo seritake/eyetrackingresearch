@@ -1,9 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
+using Tobii.Gaming;
+using System.IO;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
-public class SelectAreas : MonoBehaviour {
+public class SelectAreas : MonoBehaviour
+{
+    private string path = "C:/Users/MEIP-users/project/heatmap.js/プロジェクト演習/coordinates.csv";
 
     private List<LineRenderer> lines = new List<LineRenderer>();
     public Camera camera;
@@ -19,9 +26,22 @@ public class SelectAreas : MonoBehaviour {
 
     private bool isJudgeMode = false;
 
+    public Image image;
+    public Image anotherImage;
+    public GameObject canvas;
+
+    public InputField input;
+
+    public Boolean recordFlag = false;
+    StreamWriter sw;
+    FileInfo fi;
+
     // Use this for initialization
     void Start () {
-		
+        //Display.displays[0].Activate(1024, 768, 70);
+        //Display.displays[1].Activate(1280, 1024, 70);
+        image.GetComponent<Image>().sprite = GetPhotos.getSprite();
+        anotherImage.gameObject.SetActive(false);
 	}
 	
 	// Update is called once per frame
@@ -40,9 +60,23 @@ public class SelectAreas : MonoBehaviour {
         }
         else
         {
-            //print("area:" + areaList[0][0] + "point:" + camera.ScreenToWorldPoint(Input.mousePosition));
-            //isInArea(0, camera.ScreenToWorldPoint(Input.mousePosition));
             print(isInArea(0, camera.ScreenToWorldPoint(Input.mousePosition)));
+        }
+
+        if (recordFlag)
+        {
+            GazePoint gazePoint = TobiiAPI.GetGazePoint();
+            if (gazePoint.IsValid)
+            {
+                sw = fi.AppendText();
+                int xt = (int)(gazePoint.Screen.x - 200) * 954 / 1525;
+                int yt = (int)(1070 - gazePoint.Screen.y) * 954 / 1070;
+                String xs = xt.ToString();
+                String ys = yt.ToString();
+                sw.WriteLine(xs + "," + ys + "," + "0.3");
+                sw.Flush();
+                sw.Close();
+            }
         }
 
 	}
@@ -113,8 +147,8 @@ public class SelectAreas : MonoBehaviour {
         lines[areaCounter].material = new Material(Shader.Find("Particles/Additive"));
         lines[areaCounter].startColor = Color.white;
         lines[areaCounter].endColor = Color.white;
-        lines[areaCounter].startWidth = 0.2f;
-        lines[areaCounter].endWidth = 0.2f;
+        lines[areaCounter].startWidth = 0.05f;
+        lines[areaCounter].endWidth = 0.05f;
         lines[areaCounter].useWorldSpace = true;
     }
 
@@ -144,8 +178,43 @@ public class SelectAreas : MonoBehaviour {
         return Math.Abs(angle) > 340;
     }
 
-    public void ChangeMode()
+    public void StartMeasurement()
     {
-        isJudgeMode = true;
+        float waittime;
+        try
+        {
+            waittime = float.Parse(input.text);
+        }catch
+        {
+            return;
+        }
+        Invoke("StopMeasurement", waittime);
+        anotherImage.gameObject.SetActive(true);
+        anotherImage.GetComponent<Image>().sprite = GetPhotos.getSprite();
+
+        fi = new FileInfo(path);
+
+        if (File.Exists(path))
+        {
+            // 削除
+            fi.Delete();
+        }
+
+        sw = fi.AppendText();
+        sw.WriteLine("unity/unity_Data/Resources/photos/" +  GetPhotos.getName() + ".jpg");
+        sw.Flush();
+        sw.Close();
+        recordFlag = true;
+    }
+
+    private void StopMeasurement()
+    {
+        anotherImage.gameObject.SetActive(false);
+        recordFlag = false;
+    }
+
+    public void backToPhoto()
+    {
+        SceneManager.LoadScene("DisplayPhoto");
     }
 }
